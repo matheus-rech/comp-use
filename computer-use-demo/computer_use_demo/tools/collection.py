@@ -19,8 +19,7 @@ class ToolCollection:
         self.tools = tools
         self.tool_map: dict[str, BaseAnthropicTool] = {}
         for tool in tools:
-            # All tool implementations define a 'name' class attribute
-            self.tool_map[tool.name] = tool  # pyright: ignore[reportAttributeAccessIssue]
+            self.tool_map[tool.name] = tool
 
     def to_params(
         self,

@@ -8,8 +8,11 @@ from anthropic.types.beta import BetaToolUnionParam
 class BaseAnthropicTool(metaclass=ABCMeta):
     """Abstract base class for Anthropic-defined tools."""
 
-    # name is defined by subclasses as a class variable (e.g., name: Literal["computer"] = "computer")
-    # We don't declare it here to avoid pyright reportIncompatibleVariableOverride errors
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """The name of the tool."""
+        ...
 
     @abstractmethod
     def __call__(self, **kwargs) -> Any:
