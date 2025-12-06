@@ -19,9 +19,10 @@ class ToolCollection:
         self.tools = tools
         self.tool_map: dict[str, BaseAnthropicTool] = {}
         for tool in tools:
-            # Access name attribute directly from tool instead of from to_params()
-            # All tool implementations have a 'name' class attribute
-            self.tool_map[tool.name] = tool
+            # All tool implementations define a 'name' class attribute
+            # Use getattr to access it (pyright doesn't know about it since it's defined in subclasses)
+            name: str = getattr(tool, "name")
+            self.tool_map[name] = tool
 
     def to_params(
         self,

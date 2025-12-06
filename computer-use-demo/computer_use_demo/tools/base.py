@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, fields, replace
-from typing import Any, ClassVar
+from typing import Any
 
 from anthropic.types.beta import BetaToolUnionParam
 
@@ -8,7 +8,8 @@ from anthropic.types.beta import BetaToolUnionParam
 class BaseAnthropicTool(metaclass=ABCMeta):
     """Abstract base class for Anthropic-defined tools."""
 
-    name: ClassVar[str]
+    # name is defined by subclasses as a class variable (e.g., name: Literal["computer"] = "computer")
+    # We don't declare it here to avoid pyright reportIncompatibleVariableOverride errors
 
     @abstractmethod
     def __call__(self, **kwargs) -> Any:
