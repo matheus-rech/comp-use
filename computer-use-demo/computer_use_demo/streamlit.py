@@ -85,6 +85,7 @@ MODEL_TO_MODEL_CONF: dict[str, ModelConfig] = {
     "claude-opus-4@20250508": CLAUDE_4,
     "claude-sonnet-4-20250514": CLAUDE_4,
     "claude-sonnet-4-5-20250929": CLAUDE_4_5,
+    "claude-opus-4-5-20251101": CLAUDE_4_5,  # Claude Opus 4.5
     "claude-opus-4-20250514": CLAUDE_4,
     "claude-haiku-4-5-20251001": HAIKU_4_5,
     "anthropic.claude-haiku-4-5-20251001-v1:0": HAIKU_4_5,  # Bedrock
