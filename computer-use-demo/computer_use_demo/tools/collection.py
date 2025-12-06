@@ -1,8 +1,8 @@
 """Collection classes for managing multiple tools."""
 
-from typing import Any, cast
+from typing import Any
 
-from anthropic.types.beta import BetaToolParam, BetaToolUnionParam
+from anthropic.types.beta import BetaToolUnionParam
 
 from .base import (
     BaseAnthropicTool,
@@ -17,7 +17,8 @@ class ToolCollection:
 
     def __init__(self, *tools: BaseAnthropicTool):
         self.tools = tools
-        self.tool_map = {cast(BetaToolParam, tool.to_params())["name"]: tool for tool in tools}
+        # Our tools always return BetaToolParam which has "name", not BetaMCPToolsetParam
+        self.tool_map = {tool.to_params()["name"]: tool for tool in tools}  # type: ignore[typeddict-item]
 
     def to_params(
         self,
