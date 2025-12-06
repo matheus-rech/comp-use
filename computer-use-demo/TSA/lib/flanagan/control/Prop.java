@@ -1,0 +1,290 @@
+/*      Class Prop
+*
+*       This class contains the constructor to create an instance of
+*       a Proportional gain controller and the methods
+*       needed to use this controller in control loops in the time
+*       domain, Laplace transform s domain or the z-transform z domain.
+*
+*       This class is a subclass of the superclass BlackBox.
+*
+*       Author:  Michael Thomas Flanagan.
+*
+*       Created: August 2002
+*       Updated: 20 April 2003, 3 May 2005
+*
+*
+*       DOCUMENTATION:
+*       See Michael T Flanagan's JAVA library on-line web page:
+*       Prop.html
+*
+*   Copyright (c) May 2005  Michael Thomas Flanagan
+*
+*   PERMISSION TO COPY:
+*   Permission to use, copy and modify this software and its documentation for
+*   NON-COMMERCIAL purposes is granted, without fee, provided that an acknowledgement
+*   to the author, Michael Thomas Flanagan at www.ee.ac.uk/~mflanaga, appears in all copies.
+*
+*   Dr Michael Thomas Flanagan makes no representations about the suitability
+*   or fitness of the software for any or for a particular purpose.
+*   Michael Thomas Flanagan shall not be liable for any damages suffered
+*   as a result of using, modifying or distributing this software or its derivatives.
+*
+***************************************************************************************/
+
+
+package flanagan.control;
+import flanagan.complex.Complex;
+import flanagan.complex.ComplexPoly;
+//import flanagan.plot.Plot;
+import flanagan.plot.PlotGraph;
+
+public class Prop extends BlackBox{
+    private double kp = 1.0D;           //  proportional gain
+
+    // Constructor - unit proportional gain
+    public Prop(){
+        super.sNumerDeg = 0;
+        super.sDenomDeg = 0;
+        super.sNumer = new ComplexPoly(1.0D);
+        super.sDenom = new ComplexPoly(1.0D);
+        super.ztransMethod=1;
+        super.name="P";
+        super.fixedName="P";
+        super.addDeadTimeExtras();
+    }
+
+    // Constructor - set P gain
+    public Prop(double kp){
+        this.kp=kp;
+        super.sNumerDeg = 0;
+        super.sDenomDeg = 0;
+        super.sNumer = new ComplexPoly(this.kp);
+        super.sDenom = new ComplexPoly(1.0D);
+        super.ztransMethod=1;
+        super.name="P";
+        super.fixedName="P";
+        super.addDeadTimeExtras();
+    }
+
+    // Set the proportional gain
+    public void setKp(double kp){
+        this.kp=kp;
+        Complex num = new Complex(this.kp, 0.0D);
+        super.sNumer.resetCoeff(0, num);
+        super.addDeadTimeExtras();
+    }
+
+    // Get the proprtional gain
+    public double getKp(){
+        return this.kp;
+    }
+
+    // Perform z transform using an already set delta T
+    public void zTransform(){
+        super.zNumerDeg = 0;
+        super.zDenomDeg = 0;
+        super.zNumer = new ComplexPoly(this.kp);
+        super.zDenom = new ComplexPoly(1.0D);
+    }
+
+    // Perform z transform setting delta T
+    public void zTransform(double deltaT){
+        super.deltaT=deltaT;
+        zTransform();
+    }
+
+    // Plots the time course for a step input
+    public void stepInput(double stepMag, double finalTime){
+
+        // Calculate time course outputs
+        int n = 50;                             // number of points on plot
+        double incrT = finalTime/(double)(n-1); // plotting increment
+        double cdata[][] = new double [2][n];   // plotting array
+
+        cdata[0][0]=0.0D;
+        for(int i=1; i<n; i++){
+            cdata[0][i]=cdata[0][i-1]+incrT;
+        }
+        double kpterm = this.kp*stepMag;
+        for(int i=0; i<n; i++){
+            cdata[1][i] = kpterm;
+        }
+        if(super.deadTime!=0.0D)for(int i=0; i<n; i++)cdata[0][i] += super.deadTime;
+
+        // Plot
+        PlotGraph pg = new PlotGraph(cdata);
+
+        pg.setGraphTitle("Step Input Transient:   Step magnitude = "+stepMag);
+        pg.setGraphTitle2(this.getName());
+        pg.setXaxisLegend("Time");
+        pg.setXaxisUnitsName("s");
+        pg.setYaxisLegend("Output");
+        pg.setPoint(0);
+        pg.plot();
+    }
+
+    // Plots the time course for a unit step input
+    public void stepInput(double finalTime){
+        this.stepInput(1.0D, finalTime);
+    }
+
+    // Plots the time course for an nth order ramp input (at^n)
+    public void rampInput(double rampGradient, int rampOrder, double finalTime){
+
+        if(rampOrder==0){
+            // Check if really a step input (rampOrder, n = 0)
+            this.stepInput(rampGradient, finalTime);
+        }
+        else{
+            // Calculate time course outputs
+            int n = 50;                             // number of points on plot
+            double incrT = finalTime/(double)(n-1); // plotting increment
+            double cdata[][] = new double [2][n];   // plotting array
+            double sum = 0.0D;                      // integration sum
+
+            cdata[0][0]=0.0D;
+            cdata[1][0]=0.0D;
+            for(int i=1; i<n; i++){
+                cdata[0][i]=cdata[0][i-1]+incrT;
+                cdata[1][i] = rampGradient*Math.pow(cdata[0][i],rampOrder)*this.kp;
+            }
+            if(super.deadTime!=0.0D)for(int i=0; i<n; i++)cdata[0][i] += super.deadTime;
+
+            // Plot
+            PlotGraph pg = new PlotGraph(cdata);
+
+            pg.setGraphTitle("Ramp (a.t^n) Input Transient:   ramp gradient (a) = "+rampGradient + " ramp order (n) = " + rampOrder);
+            pg.setGraphTitle2(this.getName());
+            pg.setXaxisLegend("Time");
+            pg.setXaxisUnitsName("s");
+            pg.setYaxisLegend("Output");
+            pg.setPoint(0);
+            pg.plot();
+        }
+    }
+
+    // Plots the time course for an nth order ramp input (t^n)
+    public void rampInput(int rampOrder, double finalTime){
+        double rampGradient = 1.0D;
+        this.rampInput(rampGradient, rampOrder, finalTime);
+    }
+
+    // Plots the time course for a first order ramp input (at)
+    public void rampInput(double rampGradient, double finalTime){
+        int rampOrder = 1;
+        this.rampInput(rampGradient, rampOrder, finalTime);
+    }
+
+    // Plots the time course for a unit ramp input (t)
+    public void rampInput(double finalTime){
+        double rampGradient = 1.0D;
+        int rampOrder = 1;
+        this.rampInput(rampGradient, rampOrder, finalTime);
+    }
+
+    //  Get the s-domain output for a given s-value and a given input.
+    public Complex getOutputS(Complex sValue, Complex iinput){
+        super.sValue=sValue;
+        super.inputS=iinput;
+        super.outputS=super.inputS.times(this.kp);
+        if(super.deadTime!=0.0D)super.outputS = super.outputS.times(Complex.exp(super.sValue.times(-super.deadTime)));
+        return super.outputS;
+    }
+
+    //  Get the s-domain output for the stored input and  s-value.
+    public Complex getOutputS(){
+        super.outputS=super.inputS.times(this.kp);
+        if(super.deadTime!=0.0D)super.outputS = super.outputS.times(Complex.exp(super.sValue.times(-super.deadTime)));
+        return super.outputS;
+    }
+
+
+    //  Calculate the current time domain output for a given input and given time
+    //  resets deltaT
+    public void calcOutputT(double ttime, double inp){
+        if(ttime<=time[this.sampLen-1])throw new IllegalArgumentException("Current time equals or is less than previous time");
+        super.deltaT = ttime - super.time[this.sampLen-1];
+        super.sampFreq = 1.0D/super.deltaT;
+        super.deadTimeWarning("calcOutputT(time, input)");
+        for(int i=0; i<super.sampLen-2; i++){
+            super.time[i]=super.time[i+1];
+            super.inputT[i]=super.inputT[i+1];
+            super.outputT[i]=super.outputT[i+1];
+        }
+        super.time[super.sampLen-1]=ttime;
+        super.inputT[super.sampLen-1]=inp;
+        super.outputT[super.sampLen-1]=Double.NaN;
+        this.calcOutputT();
+    }
+
+    //  Get the output for the stored sampled input and time.
+    public void calcOutputT(){
+        // proportional term
+        super.outputT[super.sampLen-1] = this.kp*super.inputT[super.sampLen-1];
+    }
+
+    // Get the s-domain zeros
+    public Complex[] getZerosS(){
+        System.out.println("Proportional gain controller has no s-domain zeros");
+        return null;
+    }
+
+    // Get the s-domain poles
+    public Complex[] getPolesS(){
+        System.out.println("Proportional gain controller has no s-domain poles");
+        return null;
+    }
+
+    // REDUNDANT BlackBox METHODS
+    // Setting the transfer function numerator in the s-domain
+    public void setSnumer(double[] coeff){
+        System.out.println("Transfer numerator is set by a constructor or special methods in Prop; Not by setSnumer()");
+    }
+
+    public void setSnumer(Complex[] coeff){
+        System.out.println("Transfer numerator is set by a constructor or special methods in Prop; Not by setSnumer()");
+    }
+
+    public void setSnumer(ComplexPoly coeff){
+        System.out.println("Transfer numerator is set by a constructor or special methods in Prop; Not by setSnumer()");
+    }
+
+    // Seting the transfer function denominator in the s-domain
+    public void setSdenom(double[] coeff){
+        System.out.println("Transfer denominator is set by a constructor or special methods in Prop; Not by setSdenom()");
+    }
+
+    public void setSdenom(Complex[] coeff){
+        System.out.println("Transfer denominator is set by a constructor or special methods in Prop; Not by setSdenom()");
+    }
+
+    public void setSdenom(ComplexPoly coeff){
+        System.out.println("Transfer denominator is set by a constructor or special methods in Prop; Not by setSdenom()");
+    }
+
+    // Setting the transfer function numerator in the z-domain
+    public void setZnumer(double[] coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZnumer()");
+    }
+
+    public void setZnumer(Complex[] coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZnumer()");
+    }
+
+    public void setZnumer(ComplexPoly coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZnumer()");
+    }
+
+    public void setZdenom(double[] coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZdenom()");
+    }
+
+    public void setZdenom(Complex[] coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZdenom()");
+    }
+
+    public void setZdenom(ComplexPoly coeff){
+        System.out.println("Transfer numerator is set by special methods in Prop; Not by setZdenom()");
+    }
+ }
+
