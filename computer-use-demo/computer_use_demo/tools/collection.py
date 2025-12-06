@@ -1,6 +1,6 @@
 """Collection classes for managing multiple tools."""
 
-from typing import Any, cast
+from typing import Any
 
 from anthropic.types.beta import BetaToolUnionParam
 
@@ -12,18 +12,15 @@ from .base import (
 )
 
 
-def _get_tool_name(tool: BaseAnthropicTool) -> str:
-    """Extract tool name from params. Our tools always have 'name' key."""
-    params: Any = tool.to_params()
-    return cast(str, params["name"])
-
-
 class ToolCollection:
     """A collection of anthropic-defined tools."""
 
     def __init__(self, *tools: BaseAnthropicTool):
         self.tools = tools
-        self.tool_map = {_get_tool_name(tool): tool for tool in tools}
+        self.tool_map: dict[str, BaseAnthropicTool] = {}
+        for tool in tools:
+            params = dict(tool.to_params())  # Convert TypedDict to regular dict
+            self.tool_map[str(params["name"])] = tool
 
     def to_params(
         self,
