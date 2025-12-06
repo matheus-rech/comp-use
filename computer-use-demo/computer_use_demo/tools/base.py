@@ -1,12 +1,14 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, fields, replace
-from typing import Any
+from typing import Any, ClassVar
 
 from anthropic.types.beta import BetaToolUnionParam
 
 
 class BaseAnthropicTool(metaclass=ABCMeta):
     """Abstract base class for Anthropic-defined tools."""
+
+    name: ClassVar[str]
 
     @abstractmethod
     def __call__(self, **kwargs) -> Any:

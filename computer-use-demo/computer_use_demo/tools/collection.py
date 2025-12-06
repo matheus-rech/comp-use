@@ -19,8 +19,9 @@ class ToolCollection:
         self.tools = tools
         self.tool_map: dict[str, BaseAnthropicTool] = {}
         for tool in tools:
-            params = dict(tool.to_params())  # Convert TypedDict to regular dict
-            self.tool_map[str(params["name"])] = tool
+            # Access name attribute directly from tool instead of from to_params()
+            # All tool implementations have a 'name' class attribute
+            self.tool_map[tool.name] = tool
 
     def to_params(
         self,
