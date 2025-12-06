@@ -1,6 +1,6 @@
 """Collection classes for managing multiple tools."""
 
-from typing import Any
+from typing import Any, cast
 
 from anthropic.types.beta import BetaToolUnionParam
 
@@ -12,13 +12,18 @@ from .base import (
 )
 
 
+def _get_tool_name(tool: BaseAnthropicTool) -> str:
+    """Extract tool name from params. Our tools always have 'name' key."""
+    params: Any = tool.to_params()
+    return cast(str, params["name"])
+
+
 class ToolCollection:
     """A collection of anthropic-defined tools."""
 
     def __init__(self, *tools: BaseAnthropicTool):
         self.tools = tools
-        # Our tools always return BetaToolParam which has "name", not BetaMCPToolsetParam
-        self.tool_map = {tool.to_params()["name"]: tool for tool in tools}  # pyright: ignore[reportGeneralTypeIssues]
+        self.tool_map = {_get_tool_name(tool): tool for tool in tools}
 
     def to_params(
         self,
