@@ -18,7 +18,7 @@ class ToolCollection:
     def __init__(self, *tools: BaseAnthropicTool):
         self.tools = tools
         # Our tools always return BetaToolParam which has "name", not BetaMCPToolsetParam
-        self.tool_map = {tool.to_params()["name"]: tool for tool in tools}  # type: ignore[typeddict-item]
+        self.tool_map = {tool.to_params()["name"]: tool for tool in tools}  # pyright: ignore[reportGeneralTypeIssues]
 
     def to_params(
         self,
