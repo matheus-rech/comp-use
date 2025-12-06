@@ -20,9 +20,7 @@ class ToolCollection:
         self.tool_map: dict[str, BaseAnthropicTool] = {}
         for tool in tools:
             # All tool implementations define a 'name' class attribute
-            # Use getattr to access it (pyright doesn't know about it since it's defined in subclasses)
-            name: str = getattr(tool, "name")
-            self.tool_map[name] = tool
+            self.tool_map[tool.name] = tool  # pyright: ignore[reportAttributeAccessIssue]
 
     def to_params(
         self,
